@@ -1,0 +1,10 @@
+CompileFlags:             # 编译标志
+  Add:
+    - "-std=c++20"        # 使用C++20标准
+    - "-Wall"             # 所有警告
+    - "-Wextra"           # 额外警告
+    - "-Wconversion"      # 隐式转换警告
+    - "-Wno-sign-conversion"  # 禁用int->unsigned long等类型的警告（否则数组索引会有警告）
+    - "-Wnonnull"         # 空指针解引用增强警告
+    - "-Wcast-align"      # 内存地址对齐错误隐患
+    - "-Wfree-nonheap-object" # 非堆内存的释放操作
