@@ -5,7 +5,7 @@ obj = ./build/ezterm.o
 bin = ./bin/libezterm.so
 cxx_version = -std=c++20
 cflag_no_silence = -v -Wl,--verbose
-cflag_save_temp_file = -save-temps -fdump-tree-all
+cflag_save_temp_file = -save-temps
 cflag_warning = -Wall -pedantic -fdiagnostics-color=always -Wshadow
 
 $(bin) : $(obj)

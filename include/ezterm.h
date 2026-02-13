@@ -275,7 +275,7 @@ void attrset_color16(short _color_front=COLOR_DEFAULT, short _color_back=COLOR_D
 void attrset_color256(short _IDfront, short _IDback);
 
 // 使用用户自定义颜色设置
-// @ _color_front _color_back : user_color_ID，使用宏NONE代表不做颜色设置
+// @ _color_front _color_back : user_color_ID，使用宏COLOR_NONE代表不做颜色设置
 void attrset_color_usr(int _usrIDfront, int _usrIDback);
 
 // 使用RGB通道值设置
@@ -324,6 +324,8 @@ int wgetcurs_x(WINDOW* _window);
 int wget_position_y(WINDOW* _window);
 int wget_position_x(WINDOW* _window);
 #define wget_position_yx(_window, _y, _x) (_y)=wget_position_y(_window)), (_x)=wget_position_x((_window))
+// 窗口光标的移动
+void wcurs_mv_yx(WINDOW* _window, int _y, int _x);
 // 对于窗口的打印
 void wprintstr(WINDOW* _window, const char* _msg, ...);
 void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...);

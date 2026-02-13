@@ -765,6 +765,17 @@ int wget_position_x(WINDOW* _window){
 }
 #define wget_position_yx(_window, _y, _x) (_y)=wget_position_y(_window)), (_x)=wget_position_x((_window))
 
+// ======================== 窗口光标移动 ========================
+
+void wcurs_mv_yx(WINDOW* _window, int _y, int _x){
+        if(_y > _window->size_y) _y = _window->size_y;
+        else if(_y <= 0) _y = 1;
+        if(_x > _window->size_x) _x = _window->size_x;
+        else if(_x <= 0) _x = 1;
+        _window->curs_y = _y;
+        _window->curs_x = _x;
+}
+
 // ========================== 打印功能 ==========================
 
 /*
@@ -778,7 +789,7 @@ static inline void __print_to_window_use_softwrap(WINDOW* _window, char _outbuf_
         int line_length;
         line_length = _window->size_x-_window->curs_x+1; // 初始长度为第一行从光标到软换行处(长度出界处前一位)的长度
         int write_idx=0;
-        while(soft_wrap_count >= 0){
+        while(soft_wrap_count > 0){
                 // 写入一行的内容
                 __write_to_buffer(_outbuf_+write_idx, line_length);
                 write_idx+=line_length; // 写入指针向后移动，偏移量为line_length
@@ -801,6 +812,16 @@ static inline void __print_to_window_use_softwrap(WINDOW* _window, char _outbuf_
                 if(soft_wrap_count == 0){
                         // 由于每个循环周期都会从字符串总长度变量中扣除这一行的长度，最后就剩下不到一行到没写入的字符串
                         line_length=str_length;
+                        // 写入最后一行内容并退出
+                        __write_to_buffer(_outbuf_+write_idx, line_length);
+                        // 这里需要移动一下光标
+                        _window->curs_x+=line_length;
+                        // 再判断一次软换行
+                        if(_window->curs_x > _window->size_x){
+                                _window->curs_y++;
+                                _window->curs_x=1;
+                        }
+                        break;
                 }
                 else {
                         line_length=_window->size_x;
@@ -821,6 +842,7 @@ void wprintstr(WINDOW* _window, const char* _msg, ...){
         // 如果未发生软换行，直接打印
         if(soft_wrap_count==0){
                 __write_to_buffer(_outbuf_, str_length);
+                _window->curs_x+=str_length;
                 return; // 退出即可
         }
         // 当打印内容未触发软换行，程序仅会执行到这里即退出，开销依然可控，仅多一次软换行计算和判断
@@ -828,6 +850,11 @@ void wprintstr(WINDOW* _window, const char* _msg, ...){
 }
 void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
         if(_window == nullptr) return;
+        // 判断是否超出边界
+        if(_y > _window->size_y) _y = _window->size_y;
+        else if(_y <= 0) _y = 1;
+        if(_x > _window->size_x) _x = _window->size_x;
+        else if(_x <= 0) _x = 1;
         // 先移动窗口的逻辑光标，然后映射到物理光标的位置
         _window->curs_y = _y;
         _window->curs_x = _x;
@@ -867,6 +894,11 @@ void waddstr(WINDOW* _window, const char* _msg, ...){
 }
 void waddstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
         if(_window == nullptr) return;
+        // 判断是否超出边界
+        if(_y > _window->size_y) _y = _window->size_y;
+        else if(_y <= 0) _y = 1;
+        if(_x > _window->size_x) _x = _window->size_x;
+        else if(_x <= 0) _x = 1;
         // 先设置窗口光标位置
         _window->curs_y = _y;
         _window->curs_x = _x;
