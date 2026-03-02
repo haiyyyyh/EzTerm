@@ -315,15 +315,15 @@ void del_window(WINDOW* _del_win_);
 // 得到窗口大小
 int wgetsize_y(WINDOW* _window);
 int wgetsize_x(WINDOW* _window);
-#define wgetsize_yx(_window, _y, _x) (_y)=wgetsize_y((_window)), (_x)=wgetsize((_window))
+#define wgetsize_yx(_window, _y, _x) (_y)=wgetsize_y((_window)), (_x)=wgetsize_x((_window))
 // 得到窗口光标位置
 int wgetcurs_y(WINDOW* _window);
 int wgetcurs_x(WINDOW* _window);
-#define wgetcurs_yx(_window, _y, _x) (_y)=wgetcurs_y(_window)), (_x)=wgetcurs_x((_window))
+#define wgetcurs_yx(_window, _y, _x) (_y)=wgetcurs_y((_window)), (_x)=wgetcurs_x((_window))
 // 得到窗口位置(左上角)
 int wget_position_y(WINDOW* _window);
 int wget_position_x(WINDOW* _window);
-#define wget_position_yx(_window, _y, _x) (_y)=wget_position_y(_window)), (_x)=wget_position_x((_window))
+#define wget_position_yx(_window, _y, _x) (_y)=wget_position_y((_window)), (_x)=wget_position_x((_window))
 // 窗口光标的移动
 void wcurs_mv_yx(WINDOW* _window, int _y, int _x);
 // 对于窗口的打印

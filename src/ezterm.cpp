@@ -743,7 +743,7 @@ int wgetsize_x(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->size_x;
 }
-#define wgetsize_yx(_window, _y, _x) (_y)=wgetsize_y((_window)), (_x)=wgetsize((_window))
+#define wgetsize_yx(_window, _y, _x) (_y)=wgetsize_y((_window)), (_x)=wgetsize_x((_window))
 
 int wgetcurs_y(WINDOW* _window){
         if(_window == nullptr) return 0;
@@ -753,7 +753,7 @@ int wgetcurs_x(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->curs_x;
 }
-#define wgetcurs_yx(_window, _y, _x) (_y)=wgetcurs_y(_window)), (_x)=wgetcurs_x((_window))
+#define wgetcurs_yx(_window, _y, _x) (_y)=wgetcurs_y((_window)), (_x)=wgetcurs_x((_window))
 
 int wget_position_y(WINDOW* _window){
         if(_window == nullptr) return 0;
@@ -763,7 +763,7 @@ int wget_position_x(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->position_x;
 }
-#define wget_position_yx(_window, _y, _x) (_y)=wget_position_y(_window)), (_x)=wget_position_x((_window))
+#define wget_position_yx(_window, _y, _x) (_y)=wget_position_y((_window)), (_x)=wget_position_x((_window))
 
 // ======================== 窗口光标移动 ========================
 
