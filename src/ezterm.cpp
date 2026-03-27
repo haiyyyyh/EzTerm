@@ -192,6 +192,7 @@ void curser_hide(bool _is_hide){
 }
 
 // 光标样式
+#define CUR_DEFAULT 0
 #define CUR_BLOCK_BLINK 1
 #define CUR_BLOCK 2
 #define CUR_UNDERLINE_BLINK 3
@@ -868,6 +869,7 @@ void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
         // 如果未发生软换行，直接打印然后退出，最小化开销
         if(soft_wrap_count==0){
                 __write_to_buffer(_outbuf_, str_length);
+                _window->curs_x+=str_length;
                 return;
         }
         // 当发生软换行，依旧调用此函数完成打印
