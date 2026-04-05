@@ -86,8 +86,7 @@ static void __set_signals(void) {
 }
 
 
-// 初始化终端
-int initwin(){
+int raw(){
         if(__term_isinit__ == true){
                 return 0;
         }
@@ -101,16 +100,25 @@ int initwin(){
         _new_termattr_.c_lflag &= (tcflag_t)~ISIG;    // 禁用信号标志（Ctrl-C等将被作为普通字符读取）
         _new_termattr_.c_cc[VMIN] = 1;
         _new_termattr_.c_cc[VTIME] = 0;   // 这两行开启默认阻塞输入
-        __put("\033[?1049h");             // 开启备用缓冲区
-        __put("\033[?25l");               // 默认隐藏光标
-        __put("\033[?1h\033=");           // 开启应用模式（统一功能键）,实际发现开不开没遇到区别
-        __put("\033[H");                  // 将光标移到左上角
         _ret=tcsetattr(STDIN_FILENO, TCSANOW, &_new_termattr_);
         if(_ret==-1){
                 return _ret;
         }
-        __set_signals();  // 注册信号处理函数
         __term_isinit__ = true;
+        return 0;
+}
+
+
+// 初始化终端
+int initwin(){
+        int ret = raw();
+        if(ret!=0)
+                return ret;
+        __put("\033[?1049h");             // 开启备用缓冲区
+        __put("\033[?25l");               // 默认隐藏光标
+        __put("\033[?1h\033=");           // 开启应用模式（统一功能键）,实际发现开不开没遇到区别
+        __put("\033[H");                  // 将光标移到左上角
+        __set_signals();  // 注册信号处理函数
         refresh();
         return 0;
 }
