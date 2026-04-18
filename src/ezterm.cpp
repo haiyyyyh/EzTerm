@@ -32,6 +32,7 @@
 
 static termios __old_termattr__;//用于恢复终端的初始设置
 static bool __term_isinit__ = false;//记录终端是否已被初始化
+static bool __screen_isinit__ = false; // 记录是否开启了虚拟屏幕(initwin才有)
 
 
 static inline void __put(const char* _msg, ...);
@@ -122,9 +123,12 @@ int initwin(){
         int ret = raw();
         if(ret!=0)
                 return ret;
+        if(__screen_isinit__)
+                return 0;
         __put("\033[?1049h");             // 开启备用缓冲区
         __put("\033[?25l");               // 默认隐藏光标
         __put("\033[H");                  // 将光标移到左上角
+        __screen_isinit__ = true;
         __set_signals();  // 注册信号处理函数
         refresh();
         return 0;
@@ -136,17 +140,19 @@ void endwin(){
         if(!__term_isinit__){
                 return;
         }
-        __put("\033[?1049l");   // 退出备用缓冲区
-        __put("\033[?25h");     // 显示光标
-        __put("\033[?1l\033>"); // 关闭应用模式
-        __put("\033[0m");       // 重置所有颜色和文本样式属性
-        // 保险起见终止所有鼠标相关的监听
-        __put("\033[?1000l");
-        __put("\033[?1002l");
-        __put("\033[?1003l");
-        __put("\033[?1006l");
         tcsetattr(STDIN_FILENO, TCSANOW, &__old_termattr__);
-        refresh();
+        if(__screen_isinit__){
+                __put("\033[?1049l");   // 退出备用缓冲区
+                __put("\033[?25h");     // 显示光标
+                __put("\033[?1l\033>"); // 关闭应用模式
+                __put("\033[0m");       // 重置所有颜色和文本样式属性
+                // 保险起见终止所有鼠标相关的监听
+                __put("\033[?1000l");
+                __put("\033[?1002l");
+                __put("\033[?1003l");
+                __put("\033[?1006l");
+                refresh();
+        }
         return;
 }
 
@@ -709,6 +715,10 @@ void attr_reset_all(){
 ****************************************************************************/
 
 
+// (!) 警告: WINDOW存在缺陷, unicode不支持, 折行可能错乱\截断\乱码, 不再建议使用
+#define EZTERM_FUNC_REMOVE [[deprecated("Warning: WINDOW has defect, will change or remove in the future")]]
+
+
 struct WINDOW{
         // 大小信息
         int size_y;
@@ -724,7 +734,7 @@ struct WINDOW{
 
 // ======================== 窗口创建和销毁 ========================
 
-WINDOW* new_window(int _pos_Y, int _pos_X, int _size_Y, int _size_X){
+EZTERM_FUNC_REMOVE WINDOW* new_window(int _pos_Y, int _pos_X, int _size_Y, int _size_X){
         int raw_size_y, raw_size_x;
         getsize_yx(raw_size_y, raw_size_x);
         if(_pos_Y<1 || _pos_Y>raw_size_y || _pos_X<1 || _pos_X>raw_size_x){
@@ -743,7 +753,7 @@ WINDOW* new_window(int _pos_Y, int _pos_X, int _size_Y, int _size_X){
         _newwin_ptr_->size_x=_size_X;
         return _newwin_ptr_;
 }
-void del_window(WINDOW* _del_win_){
+EZTERM_FUNC_REMOVE void del_window(WINDOW* _del_win_){
         if(_del_win_==nullptr) return;
         delete(_del_win_);
 }
@@ -751,31 +761,31 @@ void del_window(WINDOW* _del_win_){
 
 // ======================= 获取窗口基础信息 =======================
 
-int wgetsize_y(WINDOW* _window){
+EZTERM_FUNC_REMOVE int wgetsize_y(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->size_y;
 }
-int wgetsize_x(WINDOW* _window){
+EZTERM_FUNC_REMOVE int wgetsize_x(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->size_x;
 }
 #define wgetsize_yx(_window, _y, _x) (_y)=wgetsize_y((_window)), (_x)=wgetsize_x((_window))
 
-int wgetcurs_y(WINDOW* _window){
+EZTERM_FUNC_REMOVE int wgetcurs_y(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->curs_y;
 }
-int wgetcurs_x(WINDOW* _window){
+EZTERM_FUNC_REMOVE int wgetcurs_x(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->curs_x;
 }
 #define wgetcurs_yx(_window, _y, _x) (_y)=wgetcurs_y((_window)), (_x)=wgetcurs_x((_window))
 
-int wget_position_y(WINDOW* _window){
+EZTERM_FUNC_REMOVE int wget_position_y(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->position_y;
 }
-int wget_position_x(WINDOW* _window){
+EZTERM_FUNC_REMOVE int wget_position_x(WINDOW* _window){
         if(_window == nullptr) return 0;
         return _window->position_x;
 }
@@ -783,7 +793,7 @@ int wget_position_x(WINDOW* _window){
 
 // ======================== 窗口光标移动 ========================
 
-void wcurs_mv_yx(WINDOW* _window, int _y, int _x){
+EZTERM_FUNC_REMOVE void wcurs_mv_yx(WINDOW* _window, int _y, int _x){
         if(_y > _window->size_y) _y = _window->size_y;
         else if(_y <= 0) _y = 1;
         if(_x > _window->size_x) _x = _window->size_x;
@@ -845,7 +855,7 @@ static inline void __print_to_window_use_softwrap(WINDOW* _window, char _outbuf_
         }
 }
 
-void wprintstr(WINDOW* _window, const char* _msg, ...){
+EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, const char* _msg, ...){
         if(_window == nullptr) return;
         // 将窗口光标位置映射为物理光标的位置
         __put("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
@@ -864,7 +874,7 @@ void wprintstr(WINDOW* _window, const char* _msg, ...){
         // 当打印内容未触发软换行，程序仅会执行到这里即退出，开销依然可控，仅多一次软换行计算和判断
         __print_to_window_use_softwrap(_window, _outbuf_, str_length, soft_wrap_count);
 }
-void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
+EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
         if(_window == nullptr) return;
         // 判断是否超出边界
         if(_y > _window->size_y) _y = _window->size_y;
@@ -890,7 +900,7 @@ void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
         // 当发生软换行，依旧调用此函数完成打印
         __print_to_window_use_softwrap(_window, _outbuf_, str_length, soft_wrap_count);
 }
-void waddstr(WINDOW* _window, const char* _msg, ...){
+EZTERM_FUNC_REMOVE void waddstr(WINDOW* _window, const char* _msg, ...){
         if(_window == nullptr) return;
         __put("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
         va_list args;
@@ -909,7 +919,7 @@ void waddstr(WINDOW* _window, const char* _msg, ...){
         __print_to_window_use_softwrap(_window, _outbuf_, str_length, soft_wrap_count);
         __put("\0338");
 }
-void waddstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
+EZTERM_FUNC_REMOVE void waddstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
         if(_window == nullptr) return;
         // 判断是否超出边界
         if(_y > _window->size_y) _y = _window->size_y;
@@ -940,7 +950,7 @@ void waddstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
 // ========================== 辅助功能 ==========================
 
 // 加边框
-void wborder(WINDOW* _window,
+EZTERM_FUNC_REMOVE void wborder(WINDOW* _window,
              const char* _l_top_corner, const char* _top_edge, const char* _r_top_corner,
              const char* _left_edge,                    const char* _right_edge,
              const char* _l_bot_corner, const char* _bot_edge, const char* _r_bot_corner )

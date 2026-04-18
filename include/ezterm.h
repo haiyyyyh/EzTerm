@@ -307,32 +307,37 @@ void attr_reset_all();
 
 // ===================================== 窗口逻辑 =====================================
 
+// (!) 警告: WINDOW存在缺陷, 因为unicode不支持, 折行可能错乱\截断\乱码, 不再建议使用
+#define EZTERM_FUNC_REMOVE [[deprecated("Warning: WINDOW has defect, will change or remove in the future")]]
+
+
 // 窗口结构体的不透明声明
 struct WINDOW;
 
 // 新建和销毁窗口
-WINDOW* new_window(int _pos_Y, int _pos_X, int _size_Y, int _size_X);
-void del_window(WINDOW* _del_win_);
+EZTERM_FUNC_REMOVE WINDOW* new_window(int _pos_Y, int _pos_X, int _size_Y, int _size_X);
+
+EZTERM_FUNC_REMOVE void del_window(WINDOW* _del_win_);
 
 // 得到窗口大小
-int wgetsize_y(WINDOW* _window);
-int wgetsize_x(WINDOW* _window);
+EZTERM_FUNC_REMOVE int wgetsize_y(WINDOW* _window);
+EZTERM_FUNC_REMOVE int wgetsize_x(WINDOW* _window);
 #define wgetsize_yx(_window, _y, _x) (_y)=wgetsize_y((_window)), (_x)=wgetsize_x((_window))
 // 得到窗口光标位置
-int wgetcurs_y(WINDOW* _window);
-int wgetcurs_x(WINDOW* _window);
+EZTERM_FUNC_REMOVE int wgetcurs_y(WINDOW* _window);
+EZTERM_FUNC_REMOVE int wgetcurs_x(WINDOW* _window);
 #define wgetcurs_yx(_window, _y, _x) (_y)=wgetcurs_y((_window)), (_x)=wgetcurs_x((_window))
 // 得到窗口位置(左上角)
-int wget_position_y(WINDOW* _window);
-int wget_position_x(WINDOW* _window);
+EZTERM_FUNC_REMOVE int wget_position_y(WINDOW* _window);
+EZTERM_FUNC_REMOVE int wget_position_x(WINDOW* _window);
 #define wget_position_yx(_window, _y, _x) (_y)=wget_position_y((_window)), (_x)=wget_position_x((_window))
 // 窗口光标的移动
-void wcurs_mv_yx(WINDOW* _window, int _y, int _x);
+EZTERM_FUNC_REMOVE void wcurs_mv_yx(WINDOW* _window, int _y, int _x);
 // 对于窗口的打印
-void wprintstr(WINDOW* _window, const char* _msg, ...);
-void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...);
-void waddstr(WINDOW* _window, const char* _msg, ...);
-void waddstr(WINDOW* _window, int _y, int _x, const char* _msg, ...);
+EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, const char* _msg, ...);
+EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...);
+EZTERM_FUNC_REMOVE void waddstr(WINDOW* _window, const char* _msg, ...);
+EZTERM_FUNC_REMOVE void waddstr(WINDOW* _window, int _y, int _x, const char* _msg, ...);
 // 加边框
 void wborder(WINDOW* _window,
              const char* _l_top_corner, const char* _top_edge, const char* _r_top_corner,

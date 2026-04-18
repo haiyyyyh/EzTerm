@@ -1,6 +1,6 @@
 CompileFlags:             # 编译标志
   Add:
-    - "-std=c++20"        # 使用C++20标准
+    - "-std=c++17"        # 使用C++17标准
     - "-Wall"             # 所有警告
     - "-Wextra"           # 额外警告
     - "-Wconversion"      # 隐式转换警告

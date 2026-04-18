@@ -34,12 +34,12 @@ remove :
 
 clear :
 	@echo "CLR temp" && /bin/ls build
-	@rm -f build/*
+	@rm -f build/ezterm*
 	@echo "done"
 	@echo "CLR bin" && /bin/ls bin
-	@rm -f bin/*
+	@rm -f bin/libezterm*
 	@echo "done"
-	
+
 test :
 	g++ $(src) -o ./test/test -O0 -g $(cflag_no_silence) $(cflag_warning) $(cxx_version)
 	@echo "then run ./test/test ..." && sleep 0.3
