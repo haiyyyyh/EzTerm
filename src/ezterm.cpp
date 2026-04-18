@@ -95,16 +95,23 @@ int raw(){
                 return _ret;
         }
         termios _new_termattr_ = __old_termattr__;
+        // update: 更正确的选择, 转而使用官方的封装, 这使终端进入原始模式, 更稳定
+        cfmakeraw(&_new_termattr_);
+        /*
+        // 以下已于 2026.4.18 弃用, 供参考, 详见 https://www.man7.org/linux/man-pages/man3/termios.3.html
+        _new_termattr_.c_iflag &= (tcflag_t)~(BRKINT | ICRNL | INLCR | INPCK | ISTRIP | IXON); // 输入设置
+        _new_termattr_.c_oflag &= (tcflag_t)~(OPOST | NLDLY | CRDLY | TABDLY); // 输出的一些设置
+        // 本地设置(主要)
         _new_termattr_.c_lflag &= (tcflag_t)~ICANON;  // 关闭行缓冲
         _new_termattr_.c_lflag &= (tcflag_t)~ECHO;    // 不回显
-        _new_termattr_.c_lflag &= (tcflag_t)~ISIG;    // 禁用信号标志（Ctrl-C等将被作为普通字符读取）
+        _new_termattr_.c_lflag &= (tcflag_t)~ISIG;    // 禁用信号标志(Ctrl-C等将被作为普通字符读取) */
         _new_termattr_.c_cc[VMIN] = 1;
         _new_termattr_.c_cc[VTIME] = 0;   // 这两行开启默认阻塞输入
         _ret=tcsetattr(STDIN_FILENO, TCSANOW, &_new_termattr_);
         if(_ret==-1){
                 return _ret;
         }
-        __put("\033[?1h\033=");           // 开启应用模式（启用功能键）
+        __put("\033[?1h\033=");      // 开启应用模式（启用功能键）
         __term_isinit__ = true;
         return 0;
 }

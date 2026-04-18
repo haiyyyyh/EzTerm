@@ -1,0 +1,5 @@
+./bin/libezterm.*
+
+./build/ezterm.*
+
+./.vscode
