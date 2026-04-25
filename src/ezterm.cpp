@@ -1,13 +1,3 @@
-/*
-* 源码风格:
-* 内部函数统一使用双下划线开头
-* 内部的全局变量统一使用双下划线开头以及结尾
-* 函数参数和将要返回到变量统一使用单下划线开头
-* 内部的大型变量（如数组、termios结构体）统一使用单下划线开头和结尾
-* 内部的局部变量正常书写
-*/
-
-
 /***************************************************************************
 *                                 头文件                                   *
 ****************************************************************************/
@@ -30,12 +20,12 @@
 *                              终端属性设置                                *
 ****************************************************************************/
 
-static termios __old_termattr__;//用于恢复终端的初始设置
-static bool __term_isinit__ = false;//记录终端是否已被初始化
-static bool __screen_isinit__ = false; // 记录是否开启了虚拟屏幕(initwin才有)
+static termios _old_termattr_;//用于恢复终端的初始设置
+static bool _term_isinit_ = false;//记录终端是否已被初始化
+static bool _screen_isinit_ = false; // 记录是否开启了虚拟屏幕(initwin才有)
 
 
-static inline void __put(const char* _msg, ...);
+static inline void _put_(const char* _msg, ...);
 void refresh();
 
 
@@ -71,31 +61,31 @@ int set_input_timeout(int _ms){
 
 
 // 监视窗口大小是否发生改变
-static bool __winsize_is_change__;
+static bool _winsize_is_change_;
 
 // 借鉴自vim源码 :-)
-static void __sig_winch(int) {
+static void _sig_winch_(int) {
     // this is not required on all systems, but it doesn't hurt anybody
-    signal(SIGWINCH, __sig_winch);
-    __winsize_is_change__ = true;
+    signal(SIGWINCH, _sig_winch_);
+    _winsize_is_change_ = true;
 }
 
-// 注册__sig_winch回调函数，当SIGWINCH改变时会被调用
-static void __set_signals(void) {
-    signal(SIGWINCH, __sig_winch);
-    __winsize_is_change__ = false;
+// 注册_sig_winch_回调函数，当SIGWINCH改变时会被调用
+static void _set_signals_(void) {
+    signal(SIGWINCH, _sig_winch_);
+    _winsize_is_change_ = false;
 }
 
 
 int raw(){
-        if(__term_isinit__ == true){
+        if(_term_isinit_ == true){
                 return 0;
         }
-        int _ret=tcgetattr(STDIN_FILENO, &__old_termattr__);
+        int _ret=tcgetattr(STDIN_FILENO, &_old_termattr_);
         if(_ret==-1){
                 return _ret;
         }
-        termios _new_termattr_ = __old_termattr__;
+        termios _new_termattr_ = _old_termattr_;
         // update: 更正确的选择, 转而使用官方的封装, 这使终端进入原始模式, 更稳定
         cfmakeraw(&_new_termattr_);
         /*
@@ -112,8 +102,8 @@ int raw(){
         if(_ret==-1){
                 return _ret;
         }
-        __put("\033[?1h\033=");      // 开启应用模式（启用功能键）
-        __term_isinit__ = true;
+        _put_("\033[?1h\033=");      // 开启应用模式（启用功能键）
+        _term_isinit_ = true;
         return 0;
 }
 
@@ -123,13 +113,13 @@ int initwin(){
         int ret = raw();
         if(ret!=0)
                 return ret;
-        if(__screen_isinit__)
+        if(_screen_isinit_)
                 return 0;
-        __put("\033[?1049h");             // 开启备用缓冲区
-        __put("\033[?25l");               // 默认隐藏光标
-        __put("\033[H");                  // 将光标移到左上角
-        __screen_isinit__ = true;
-        __set_signals();  // 注册信号处理函数
+        _put_("\033[?1049h");             // 开启备用缓冲区
+        _put_("\033[?25l");               // 默认隐藏光标
+        _put_("\033[H");                  // 将光标移到左上角
+        _screen_isinit_ = true;
+        _set_signals_();  // 注册信号处理函数
         refresh();
         return 0;
 }
@@ -137,20 +127,20 @@ int initwin(){
 
 // 恢复终端属性
 void endwin(){
-        if(!__term_isinit__){
+        if(!_term_isinit_){
                 return;
         }
-        tcsetattr(STDIN_FILENO, TCSANOW, &__old_termattr__);
-        if(__screen_isinit__){
-                __put("\033[?1049l");   // 退出备用缓冲区
-                __put("\033[?25h");     // 显示光标
-                __put("\033[?1l\033>"); // 关闭应用模式
-                __put("\033[0m");       // 重置所有颜色和文本样式属性
+        tcsetattr(STDIN_FILENO, TCSANOW, &_old_termattr_);
+        if(_screen_isinit_){
+                _put_("\033[?1049l");   // 退出备用缓冲区
+                _put_("\033[?25h");     // 显示光标
+                _put_("\033[?1l\033>"); // 关闭应用模式
+                _put_("\033[0m");       // 重置所有颜色和文本样式属性
                 // 保险起见终止所有鼠标相关的监听
-                __put("\033[?1000l");
-                __put("\033[?1002l");
-                __put("\033[?1003l");
-                __put("\033[?1006l");
+                _put_("\033[?1000l");
+                _put_("\033[?1002l");
+                _put_("\033[?1003l");
+                _put_("\033[?1006l");
                 refresh();
         }
         return;
@@ -158,10 +148,10 @@ void endwin(){
 
 
 // 得到终端的最大x和y值
-static winsize __get_term_ws(){
+static winsize _get_term_ws_(){
         //当终端大小更改时，用户会查询终端大小，于是我们可以将标志位置为false
-        if(__winsize_is_change__){
-                __winsize_is_change__ = false;
+        if(_winsize_is_change_){
+                _winsize_is_change_ = false;
         }
         winsize _winSZ_;
         //使用标准API查看终端设备属性
@@ -169,18 +159,18 @@ static winsize __get_term_ws(){
         return _winSZ_;
 }
 unsigned short getsize_y(){
-        return __get_term_ws().ws_row;
+        return _get_term_ws_().ws_row;
 }
 unsigned short getsize_x(){
-        return __get_term_ws().ws_col;
+        return _get_term_ws_().ws_col;
 }
 #define getsize_yx(row,col) row=getsize_y(), col=getsize_x()
 
 // 返回终端大小是否更改的标志
 bool size_ischange(){
         //用户已经知道了，所以我们将标志位重置
-        if(__winsize_is_change__==true){
-                __winsize_is_change__=false;
+        if(_winsize_is_change_==true){
+                _winsize_is_change_=false;
                 return true;
         }
         return false;
@@ -205,10 +195,10 @@ void curs_get_yx(int& _cur_row, int& _cur_col){
 // 是否隐藏光标
 void curser_hide(bool _is_hide){
         if(_is_hide){
-                __put("\033[?25l");
+                _put_("\033[?25l");
         }
         else{
-                __put("\033[?25h");
+                _put_("\033[?25h");
         }
 }
 
@@ -224,40 +214,40 @@ void curser_hide(bool _is_hide){
 // 设置光标样式
 // @ _style : 使用"CUR_"前缀的宏
 void curser_set_style(short _style){
-        __put("\033[%d q", _style);
+        _put_("\033[%d q", _style);
 }
 
 
 //光标移动
 void curs_mv_yx(int _y, int _x){
-        __put("\033[%d;%dH",_y,_x);
+        _put_("\033[%d;%dH",_y,_x);
 }
 void curs_mv_up(int _step){
-        __put("\033[%dA",_step);
+        _put_("\033[%dA",_step);
 }
 void curs_mv_down(int _step){
-        __put("\033[%dB",_step);
+        _put_("\033[%dB",_step);
 }
 void curs_mv_right(int _step){
-        __put("\033[%dC",_step);
+        _put_("\033[%dC",_step);
 }
 void curs_mv_left(int _step){
-        __put("\033[%dD",_step);
+        _put_("\033[%dD",_step);
 }
 
 // 全局记录光标还原点是否已有的变量
-static bool __curs_position_is_saved=false;
+static bool _curs_position_is_saved=false;
 
 // 保存光标位置
 void curs_yx_save(){
-        __put("\0337");
-        __curs_position_is_saved=true;
+        _put_("\0337");
+        _curs_position_is_saved=true;
 }
 // 恢复光标位置
 void curs_yx_restore(){
-        if(__curs_position_is_saved==false) return;
-        __put("\0338");
-        __curs_position_is_saved=false;
+        if(_curs_position_is_saved==false) return;
+        _put_("\0338");
+        _curs_position_is_saved=false;
 }
 
 
@@ -268,34 +258,34 @@ void curs_yx_restore(){
 
 //临时保存屏幕
 void screen_save(){
-        __put("\033[?24h");
+        _put_("\033[?24h");
 }
 
 //恢复之前保存的屏幕
 void screen_restore(){
-        __put("\033[?24l");
+        _put_("\033[?24l");
 }
 
 //清除屏幕
 void screen_clear_all(){//全部
-        __put("\033[2J");
+        _put_("\033[2J");
 }
 void screen_clear_to_bot(){//光标至左上角
-        __put("\033[0J");
+        _put_("\033[0J");
 }
 void screen_clear_to_top(){//光标至右下角
-        __put("\033[1J");
+        _put_("\033[1J");
 }
 
 //清除行
 void line_clear_all(){//整行
-        __put("\033[2K");
+        _put_("\033[2K");
 }
 void line_clear_to_start(){//光标至开头
-        __put("\033[1K");
+        _put_("\033[1K");
 }
 void line_clear_to_end(){//光标至结尾
-        __put("\033[0K");
+        _put_("\033[0K");
 }
 
 
@@ -306,40 +296,40 @@ void line_clear_to_end(){//光标至结尾
 
 // 缓冲区逻辑相关函数，核心优化
 
-static char  __out_buffer__[8192];
-static int __obuf_write_idx__=0;
+static char  _out_buffer_[8192];
+static int _obuf_write_idx_=0;
 
-static inline void __write_to_buffer(char* _msg, size_t _length){
+static inline void _write_to_buffer_(char* _msg, size_t _length){
         size_t push_ptr=0;
         while(push_ptr < _length){
                 // 如果缓冲区满，执行写入操作并归位写指针
-                if(__obuf_write_idx__ >= 8192){
-                        write(STDOUT_FILENO, __out_buffer__, 8192);
-                        __obuf_write_idx__=0;
+                if(_obuf_write_idx_ >= 8192){
+                        write(STDOUT_FILENO, _out_buffer_, 8192);
+                        _obuf_write_idx_=0;
                 }
                 // 转义序列保留空间，防止截断，保险起见转义序列大小极限视为31
-                else if(*(_msg+push_ptr)=='\033' && __obuf_write_idx__+31 >= 8192){
-                        write(STDOUT_FILENO, __out_buffer__, __obuf_write_idx__);
-                        __obuf_write_idx__=0;
+                else if(*(_msg+push_ptr)=='\033' && _obuf_write_idx_+31 >= 8192){
+                        write(STDOUT_FILENO, _out_buffer_, _obuf_write_idx_);
+                        _obuf_write_idx_=0;
                 }
-                *(__out_buffer__+__obuf_write_idx__) = *(_msg+push_ptr);
-                __obuf_write_idx__++; push_ptr++;
+                *(_out_buffer_+_obuf_write_idx_) = *(_msg+push_ptr);
+                _obuf_write_idx_++; push_ptr++;
         }
 }
 
 void refresh(){
-        write(STDOUT_FILENO, __out_buffer__, __obuf_write_idx__);
-        __obuf_write_idx__=0;
+        write(STDOUT_FILENO, _out_buffer_, _obuf_write_idx_);
+        _obuf_write_idx_=0;
 }
 
 
 // 内部的打印函数，职责：高效发送转义序列
-static inline void __put(const char* _msg, ...){
+static inline void _put_(const char* _msg, ...){
         va_list args;
         va_start(args, _msg);
         char _outbuf_[31];
         ssize_t str_length = vsnprintf(_outbuf_, sizeof(_outbuf_), _msg, args);
-        __write_to_buffer(_outbuf_, str_length);
+        _write_to_buffer_(_outbuf_, str_length);
 }
 
 
@@ -349,16 +339,16 @@ void printstr(const char* _msg, ...){
         va_start(args, _msg);
         char _outbuf_[4096];
         ssize_t str_length = vsnprintf(_outbuf_, sizeof(_outbuf_), _msg, args);
-        __write_to_buffer(_outbuf_, str_length);
+        _write_to_buffer_(_outbuf_, str_length);
 }
 
 void printstr(int _y, int _x, const char* _msg, ...){
-        __put("\033[%d;%dH",_y,_x);
+        _put_("\033[%d;%dH",_y,_x);
         va_list args;
         va_start(args, _msg);
         char _outbuf_[4096];
         ssize_t str_length = vsnprintf(_outbuf_, sizeof(_outbuf_), _msg, args);
-        __write_to_buffer(_outbuf_, str_length);
+        _write_to_buffer_(_outbuf_, str_length);
 }
 
 
@@ -368,20 +358,20 @@ void addstr(const char* _msg, ...){
         va_start(args, _msg);
         char _outbuf_[4096];
         ssize_t str_length = vsnprintf(_outbuf_, sizeof(_outbuf_), _msg, args);
-        __put("\0337");// 保存光标位置
-        __write_to_buffer(_outbuf_, str_length);
-        __put("\0338");// 移回
+        _put_("\0337");// 保存光标位置
+        _write_to_buffer_(_outbuf_, str_length);
+        _put_("\0338");// 移回
 }
 
 void addstr(int _y, int _x, const char* _msg, ...){
-        __put("\033[%d;%dH",_y,_x);
+        _put_("\033[%d;%dH",_y,_x);
         va_list args;
         va_start(args, _msg);
         char _outbuf_[4096];
         ssize_t str_length = vsnprintf(_outbuf_, sizeof(_outbuf_), _msg, args);
-        __put("\0337");// 保存光标位置
-        __write_to_buffer(_outbuf_, str_length);
-        __put("\0338");// 移回
+        _put_("\0337");// 保存光标位置
+        _write_to_buffer_(_outbuf_, str_length);
+        _put_("\0338");// 移回
 }
 
 
@@ -510,14 +500,14 @@ bool operator==(const ezkey& _in_key, const char* _cmp_msg){//比较符号被重
 void use_mouse(bool _is_use, short _support_type=1002){
         if(_is_use==false){
                 // 保险起见全关掉
-                __put("\033[?1000l");
-                __put("\033[?1002l");
-                __put("\033[?1003l");
-                __put("\033[?1006l");
+                _put_("\033[?1000l");
+                _put_("\033[?1002l");
+                _put_("\033[?1003l");
+                _put_("\033[?1006l");
                 return;
         }
-        __put("\033[?%dh", _support_type);
-        __put("\033[?1006h");        // 开启SGR格式序列的鼠标状态上报
+        _put_("\033[?%dh", _support_type);
+        _put_("\033[?1006h");        // 开启SGR格式序列的鼠标状态上报
         refresh();
 }
 
@@ -633,7 +623,7 @@ struct color{
         short _g=0;
         short _b=0;
 };
-static std::vector<color> __usr_color_list__;
+static std::vector<color> _usr_color_list_;
 
 
 // 新建用户颜色，函数返回颜色ID
@@ -642,8 +632,8 @@ int init_usr_color(short _r, short _g, short _b){
         _new_color_._r = _r;
         _new_color_._g = _g;
         _new_color_._b = _b;
-        __usr_color_list__.push_back(_new_color_);
-        int _new_colorID = (int)__usr_color_list__.size()-1;
+        _usr_color_list_.push_back(_new_color_);
+        int _new_colorID = (int)_usr_color_list_.size()-1;
         return _new_colorID;
 }
 
@@ -652,17 +642,17 @@ int init_usr_color(short _r, short _g, short _b){
 // @ _style : 使用"STYLE_"前缀的宏
 void attrset_style(short _style, bool _on_off){
         if(_on_off==true){
-                __put("\033[%dm", _style);
+                _put_("\033[%dm", _style);
         }
         else{
-                __put("\033[2%dm", _style>1 ? _style : 2); // 加粗和暗淡的关闭序列都是22
+                _put_("\033[2%dm", _style>1 ? _style : 2); // 加粗和暗淡的关闭序列都是22
         }
 }
 
 // 使用16颜色设置
 // @ _color_front _color_back : 使用"COLOR_"前缀的宏
 void attrset_color16(short _color_front=COLOR_DEFAULT, short _color_back=COLOR_DEFAULT){
-        __put("\033[%d;%dm", _color_front, _color_back+10);
+        _put_("\033[%d;%dm", _color_front, _color_back+10);
 }
 
 #define COLOR_NONE -1
@@ -671,40 +661,40 @@ void attrset_color16(short _color_front=COLOR_DEFAULT, short _color_back=COLOR_D
 // @ _color_front _color_back : colorID(0~255)，使用宏COLOR_NONE代表不做颜色设置
 void attrset_color256(short _IDfront, short _IDback){
         if(_IDfront!=COLOR_NONE){
-                __put("\033[38;5;%dm", _IDfront);
+                _put_("\033[38;5;%dm", _IDfront);
         }
         if(_IDback!=COLOR_NONE){
-                __put("\033[48;5;%dm", _IDback);
+                _put_("\033[48;5;%dm", _IDback);
         }
 }
 // 使用用户自定义颜色设置
 // @ _color_front _color_back : user_color_ID，使用宏COLOR_NONE代表不做颜色设置
 void attrset_color_usr(int _usrIDfront, int _usrIDback){
         if(_usrIDfront!=COLOR_NONE){
-                __put("\033[38;2;%d;%d;%dm",
-                       __usr_color_list__[_usrIDfront]._r, __usr_color_list__[_usrIDfront]._g, __usr_color_list__[_usrIDfront]._b );
+                _put_("\033[38;2;%d;%d;%dm",
+                       _usr_color_list_[_usrIDfront]._r, _usr_color_list_[_usrIDfront]._g, _usr_color_list_[_usrIDfront]._b );
         }
         if(_usrIDback!=COLOR_NONE){
-                __put("\033[48;2;%d;%d;%dm",
-                       __usr_color_list__[_usrIDback]._r, __usr_color_list__[_usrIDback]._g, __usr_color_list__[_usrIDback]._b );
+                _put_("\033[48;2;%d;%d;%dm",
+                       _usr_color_list_[_usrIDback]._r, _usr_color_list_[_usrIDback]._g, _usr_color_list_[_usrIDback]._b );
         }
 }
 // 使用RGB通道值设置
 // @ _frontR _frontG _frontB  _backR _backG _backB : 使用通道值，为-1则代表不设置
 void attrset_color_usr_rawRGB(short _frontR, short _frontG, short _frontB, short _backR, short _backG, short _backB){
         if(_frontR!=-1 && _frontG!=-1 && _frontB!=-1){
-                __put("\033[38;2;%d;%d;%dm",
+                _put_("\033[38;2;%d;%d;%dm",
                        _frontR, _frontG, _frontB );
         }
         if(_backR!=-1 && _backG!=-1 && _backB!=-1){
-                __put("\033[48;2;%d;%d;%dm",
+                _put_("\033[48;2;%d;%d;%dm",
                        _backR, _backG, _backB );
         }
 }
 
 // 重置所有属性（包括颜色和样式）
 void attr_reset_all(){
-        __put("\033[0m");
+        _put_("\033[0m");
 }
 
 
@@ -810,14 +800,14 @@ EZTERM_FUNC_REMOVE void wcurs_mv_yx(WINDOW* _window, int _y, int _x){
 * 显然，对于窗口，打印操作开销极其庞大,
 * 开发者应尽量使用缓冲等方法，避免频繁的打印
 */
-static inline void __print_to_window_use_softwrap(WINDOW* _window, char _outbuf_[], int str_length, int soft_wrap_count){
+static inline void _print_to_window_use_softwrap_(WINDOW* _window, char _outbuf_[], int str_length, int soft_wrap_count){
         // 当触发了软换行，调用此函数
         int line_length;
         line_length = _window->size_x-_window->curs_x+1; // 初始长度为第一行从光标到软换行处(长度出界处前一位)的长度
         int write_idx=0;
         while(soft_wrap_count > 0){
                 // 写入一行的内容
-                __write_to_buffer(_outbuf_+write_idx, line_length);
+                _write_to_buffer_(_outbuf_+write_idx, line_length);
                 write_idx+=line_length; // 写入指针向后移动，偏移量为line_length
                 str_length-=line_length; // 然后str_length中扣除line_length的长度
                 // 进行换行
@@ -825,10 +815,10 @@ static inline void __print_to_window_use_softwrap(WINDOW* _window, char _outbuf_
                         // 当未超出窗口右下角，进行软换行操作
                         _window->curs_y++;
                         _window->curs_x=1;
-                        __put("\033[%d;%dH",_window->position_y+_window->curs_y-1, _window->position_x);
+                        _put_("\033[%d;%dH",_window->position_y+_window->curs_y-1, _window->position_x);
                 }else{
                         // 强行将光标移到窗口右下角，防止出现无法预测的情况造成格式混乱
-                        __put("\033[%d;%dH",_window->position_y+_window->size_y-1, _window->position_x+_window->size_x-1);
+                        _put_("\033[%d;%dH",_window->position_y+_window->size_y-1, _window->position_x+_window->size_x-1);
                         _window->curs_y=_window->size_y;
                         _window->curs_x=_window->size_x;
                         return; // 然后直接退出即可
@@ -839,7 +829,7 @@ static inline void __print_to_window_use_softwrap(WINDOW* _window, char _outbuf_
                         // 由于每个循环周期都会从字符串总长度变量中扣除这一行的长度，最后就剩下不到一行到没写入的字符串
                         line_length=str_length;
                         // 写入最后一行内容并退出
-                        __write_to_buffer(_outbuf_+write_idx, line_length);
+                        _write_to_buffer_(_outbuf_+write_idx, line_length);
                         // 这里需要移动一下光标
                         _window->curs_x+=line_length;
                         // 再判断一次软换行
@@ -858,7 +848,7 @@ static inline void __print_to_window_use_softwrap(WINDOW* _window, char _outbuf_
 EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, const char* _msg, ...){
         if(_window == nullptr) return;
         // 将窗口光标位置映射为物理光标的位置
-        __put("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
+        _put_("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
         va_list args;
         va_start(args, _msg);
         char _outbuf_[4096];
@@ -867,12 +857,12 @@ EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, const char* _msg, ...){
         int soft_wrap_count = (_window->curs_x + str_length - 1) / _window->size_x;
         // 如果未发生软换行，直接打印
         if(soft_wrap_count==0){
-                __write_to_buffer(_outbuf_, str_length);
+                _write_to_buffer_(_outbuf_, str_length);
                 _window->curs_x+=str_length;
                 return; // 退出即可
         }
         // 当打印内容未触发软换行，程序仅会执行到这里即退出，开销依然可控，仅多一次软换行计算和判断
-        __print_to_window_use_softwrap(_window, _outbuf_, str_length, soft_wrap_count);
+        _print_to_window_use_softwrap_(_window, _outbuf_, str_length, soft_wrap_count);
 }
 EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
         if(_window == nullptr) return;
@@ -884,7 +874,7 @@ EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, int _y, int _x, const char* _
         // 先移动窗口的逻辑光标，然后映射到物理光标的位置
         _window->curs_y = _y;
         _window->curs_x = _x;
-        __put("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
+        _put_("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
         va_list args;
         va_start(args, _msg);
         char _outbuf_[4096];
@@ -893,16 +883,16 @@ EZTERM_FUNC_REMOVE void wprintstr(WINDOW* _window, int _y, int _x, const char* _
         int soft_wrap_count = (_window->curs_x + str_length - 1) / _window->size_x;
         // 如果未发生软换行，直接打印然后退出，最小化开销
         if(soft_wrap_count==0){
-                __write_to_buffer(_outbuf_, str_length);
+                _write_to_buffer_(_outbuf_, str_length);
                 _window->curs_x+=str_length;
                 return;
         }
         // 当发生软换行，依旧调用此函数完成打印
-        __print_to_window_use_softwrap(_window, _outbuf_, str_length, soft_wrap_count);
+        _print_to_window_use_softwrap_(_window, _outbuf_, str_length, soft_wrap_count);
 }
 EZTERM_FUNC_REMOVE void waddstr(WINDOW* _window, const char* _msg, ...){
         if(_window == nullptr) return;
-        __put("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
+        _put_("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
         va_list args;
         va_start(args, _msg);
         char _outbuf_[4096];
@@ -910,14 +900,14 @@ EZTERM_FUNC_REMOVE void waddstr(WINDOW* _window, const char* _msg, ...){
         int soft_wrap_count = (_window->curs_x + str_length - 1) / _window->size_x;
         // 仅增加光标位置保存和恢复逻辑，其他代码完全相同
         if(soft_wrap_count==0){
-                __put("\0337");// 保存光标位置
-                __write_to_buffer(_outbuf_, str_length);
-                __put("\0338");// 移回
+                _put_("\0337");// 保存光标位置
+                _write_to_buffer_(_outbuf_, str_length);
+                _put_("\0338");// 移回
                 return;
         }
-        __put("\0337");
-        __print_to_window_use_softwrap(_window, _outbuf_, str_length, soft_wrap_count);
-        __put("\0338");
+        _put_("\0337");
+        _print_to_window_use_softwrap_(_window, _outbuf_, str_length, soft_wrap_count);
+        _put_("\0338");
 }
 EZTERM_FUNC_REMOVE void waddstr(WINDOW* _window, int _y, int _x, const char* _msg, ...){
         if(_window == nullptr) return;
@@ -929,21 +919,21 @@ EZTERM_FUNC_REMOVE void waddstr(WINDOW* _window, int _y, int _x, const char* _ms
         // 先设置窗口光标位置
         _window->curs_y = _y;
         _window->curs_x = _x;
-        __put("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
+        _put_("\033[%d;%dH", _window->position_y+_window->curs_y-1, _window->position_x+_window->curs_x-1);
         va_list args;
         va_start(args, _msg);
         char _outbuf_[4096];
         int str_length = vsnprintf(_outbuf_, sizeof(_outbuf_), _msg, args);
         int soft_wrap_count = (_window->curs_x + str_length - 1) / _window->size_x;
         if(soft_wrap_count==0){
-                __put("\0337");// 保存光标位置
-                __write_to_buffer(_outbuf_, str_length);
-                __put("\0338");// 移回
+                _put_("\0337");// 保存光标位置
+                _write_to_buffer_(_outbuf_, str_length);
+                _put_("\0338");// 移回
                 return;
         }
-        __put("\0337");
-        __print_to_window_use_softwrap(_window, _outbuf_, str_length, soft_wrap_count);
-        __put("\0338");
+        _put_("\0337");
+        _print_to_window_use_softwrap_(_window, _outbuf_, str_length, soft_wrap_count);
+        _put_("\0338");
 }
 
 
@@ -958,28 +948,28 @@ EZTERM_FUNC_REMOVE void wborder(WINDOW* _window,
         if(_window == nullptr) return;
         curs_yx_save();
         // 移到左上角
-        __put("\033[%d;%dH", _window->position_y, _window->position_x);
+        _put_("\033[%d;%dH", _window->position_y, _window->position_x);
         // 绘制上横向边框\033[48;2;%d;%d;%dm
         for(int _idx=0; _idx<_window->size_x; _idx++){
-                if(_idx==0) __put("%s", _l_top_corner);
-                else if(_idx==_window->size_x-1) __put("%s", _r_top_corner);
-                else __put("%s", _top_edge);
+                if(_idx==0) _put_("%s", _l_top_corner);
+                else if(_idx==_window->size_x-1) _put_("%s", _r_top_corner);
+                else _put_("%s", _top_edge);
         }
         // 绘制侧边框
         for(int _idx=1; _idx<=_window->size_y-2; _idx++){
                 // 光标移到左侧边框位置
-                __put("\033[%d;%dH", _window->position_y+_idx, _window->position_x);
-                __put("%s", _left_edge);
+                _put_("\033[%d;%dH", _window->position_y+_idx, _window->position_x);
+                _put_("%s", _left_edge);
                 // 光标移到右侧边框位置
-                __put("\033[%dC",_window->size_x-2);
-                __put("%s", _right_edge);
+                _put_("\033[%dC",_window->size_x-2);
+                _put_("%s", _right_edge);
         }
         // 移到最后一行开头绘制底部线
-        __put("\033[%d;%dH", _window->position_y+_window->size_y-1, _window->position_x);
+        _put_("\033[%d;%dH", _window->position_y+_window->size_y-1, _window->position_x);
         for(int _idx=0; _idx<_window->size_x; _idx++){
-                if(_idx==0) __put("%s", _l_bot_corner);
-                else if(_idx==_window->size_x-1) __put("%s", _r_bot_corner);
-                else __put("%s", _bot_edge);
+                if(_idx==0) _put_("%s", _l_bot_corner);
+                else if(_idx==_window->size_x-1) _put_("%s", _r_bot_corner);
+                else _put_("%s", _bot_edge);
         }
         curs_yx_restore();
 }

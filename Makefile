@@ -3,7 +3,7 @@
 src = ./src/ezterm.cpp
 obj = ./build/ezterm.o
 bin = ./bin/libezterm.so
-cxx_version = -std=c++20
+cxx_version = -std=c++17
 cflag_no_silence = -v -Wl,--verbose
 cflag_save_temp_file = -save-temps
 cflag_warning = -Wall -pedantic -fdiagnostics-color=always -Wshadow
@@ -32,7 +32,7 @@ remove :
 	@echo "RM /usr/lib/libezterm.so /usr/lib/libezterm.a /usr/include/ezterm.h (use sudo)"
 	@sudo rm /usr/lib/libezterm.so /usr/lib/libezterm.a /usr/include/ezterm.h
 
-clear :
+clean :
 	@echo "CLR temp" && /bin/ls build
 	@rm -f build/ezterm*
 	@echo "done"
