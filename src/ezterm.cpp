@@ -994,7 +994,7 @@ EZTERM_FUNC_REMOVE void wborder(WINDOW* _window,
 //         refresh();
 //         int x,y;
 //         while(1){
-//                 ez_key key= getkey();
+//                 ezkey key= getkey();
 //                 if(key==KEY_ESC){
 //                         break;
 //                 }
