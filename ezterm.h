@@ -10,7 +10,7 @@
 
 
 #ifdef __cplusplus
-typedef char __this_is_ezterm_for_C__please_use_ezterm_h_[-1]
+#error "this is ezterm for C, please use ezterm.cpp at main branch for C++"
 #endif
 
 
