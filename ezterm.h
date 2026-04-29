@@ -705,12 +705,12 @@ void attr_reset_all(){
 //         refresh();
 //         int x,y;
 //         while(1){
-//                 ez_key key= getkey();
-//                 if(key==KEY_ESC){
+//                 struct ezkey key = getkey();
+//                 if(key_cmp(&key, KEY_ESC)){
 //                         break;
 //                 }
-//                 get_mouse_state(key, y,x);
-//                 printstr(y,x, "@");
+//                 get_mouse_state(&key, &y, &x);
+//                 mvprintstr(y,x, "@");
 //                 refresh();
 //         }
 //         endwin();
