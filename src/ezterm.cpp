@@ -193,7 +193,7 @@ void curs_get_yx(int& _cur_row, int& _cur_col){
 ****************************************************************************/
 
 // 是否隐藏光标
-void curser_hide(bool _is_hide){
+void cursor_hide(bool _is_hide){
         if(_is_hide){
                 _put_("\033[?25l");
         }
@@ -213,7 +213,7 @@ void curser_hide(bool _is_hide){
 
 // 设置光标样式
 // @ _style : 使用"CUR_"前缀的宏
-void curser_set_style(short _style){
+void cursor_set_style(short _style){
         _put_("\033[%d q", _style);
 }
 
@@ -255,16 +255,6 @@ void curs_yx_restore(){
 *                                屏幕操作                                  *
 ****************************************************************************/
 
-
-//临时保存屏幕
-void screen_save(){
-        _put_("\033[?24h");
-}
-
-//恢复之前保存的屏幕
-void screen_restore(){
-        _put_("\033[?24l");
-}
 
 //清除屏幕
 void screen_clear_all(){//全部

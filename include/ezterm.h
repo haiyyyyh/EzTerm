@@ -36,7 +36,7 @@ bool size_ischange();
 **************************/
 
 // 是否隐藏光标
-void curser_hide(bool _is_hide);
+void cursor_hide(bool _is_hide);
 
 // 光标样式
 #define CUR_BLOCK_BLINK 1
@@ -48,7 +48,7 @@ void curser_hide(bool _is_hide);
 
 // 设置光标样式
 // @ _style : 使用"CUR_"前缀的宏
-void curser_set_style(short _style);
+void cursor_set_style(short _style);
 
 //得到光标位置
 void curs_get_yx(int& _cur_row, int& _cur_col);
@@ -70,11 +70,6 @@ void curs_yx_restore();
 /***************************
 *封装一些物理终端的快捷操作*
 ****************************/
-
-//临时保存屏幕
-void screen_save();
-//恢复之前保存的屏幕
-void screen_restore();
 
 //清除屏幕
 void screen_clear_all();//全部
